@@ -1,22 +1,142 @@
 # Receipt Processor
+A NestJS implementation of a receipt processor api that persists and serves receipt data and calculates points based on a set of rules. The api is defined in `api.yml` as an OpenAPI spec. Details about API endpoints and point rules are documented [below](#summary-of-api-specification).
 
-Build a webservice that fulfils the documented API. The API is described below. A formal definition is provided 
-in the [api.yml](./api.yml) file, but the information in this README is sufficient for completion of this challenge. We will use the 
-described API to test your solution.
+# Run Application Locally
+You can run this application locally in Docker, or directly on your machine using NestJS. There are `npm` scripts provided to streamline this process if you have `npm` installed.
 
-Provide any instructions required to run your application.
+*Note:* We validate input according to the provided OpenAPI specification. The specification states that `purchaseTime` should have the `time` format. The `time` format requires that `seconds` be present (eg. `03:01:02`). Therefore, if you use the provided JSON from the original repository/README, *it will not validate*. The examples in this repository have been updated with this format.
 
-Data does not need to persist when your application stops. It is sufficient to store information in memory. There are too many different database solutions, we will not be installing a database on our system when testing your application.
+## Using Docker
+### Environment setup
+Environment variables are required for each application stage. An example file is included in the repository. No values should be changed (yet), as there are no secrets handled by the application currently.
 
-## Language Selection
+```bash
+$ cp ./env/.env.example ./env/.env.development && cp ./env/.env.example ./env/.env.test
+```
 
-You can assume our engineers have Go and Docker installed to run your application. Go is our preferred language, but it is not a requirement for this exercise. If you are not using Go, include a Dockerized setup to run the code. You should also provide detailed instructions if your Docker file requires any additional configuration to run the application.
 
-## Submitting Your Solution
+### Build and Run Container
+Make sure you have Docker running on your machine, and then use these commands to build and start the application container:
+```bash
+$ docker build --build-arg NODE_ENV=development -t receipt-processor-api:latest .
+```
+```bash
+$ docker run -p 3000:3000 -t receipt-processor-api:latest
+```
+Or if you have `npm` installed:
+```bash
+$ npm run docker:bootstrap
+```
 
-Provide a link to a public repository, such as GitHub or BitBucket, that contains your code to the provided link through Greenhouse.
 
----
+## Run Application Locally with NestJS
+You will want to install `node` for development. 
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+```
+```bash
+nvm install node
+```
+
+Then, simply run this command to set up and start the application locally:
+```bash
+$ npm run bootstrap && npm run start-local
+```
+
+# Summary of Application Features
+While I'm learning Go (and love it!), for this exercise I opted to build the service in Node.js to leverage my most recently used toolset. I designed the solution to be Go-like where possible, particulary where concurrency would be beneficial.
+
+Here is a rundown of what is included:
+- NestJS (Typescript) with a structured Controller-Service-Repository model, defined and configured in `ReceiptsModule`.
+- Prisma for an ORM layer, with a SQLite implementation for demonstration purposes.
+  - Prisma generates an abstracted client from a central `schema.prisma` file that can be used for common SQL queries. It also has support for executing arbitrary SQL queries.
+  - Prisma provides lifecycle functions for common tasks, like `migrations`.
+  - For simplicity, we currently compile and migrate the Prisma schema directly in the Dockerfile to run SQLite in the same container as the application. For production, we would provide a `docker-compose.yml` to configure connections to external resources like the database, and the migration would be run during a deployment stage in the CI/CD pipeline.
+- Flexible and configurable Point Rules algorithm that simulates Go-like "concurrency" scheme.
+  - Found in `src/receipts/point-rules.ts`
+  - Configured via `point-rules-config.yml`.
+- Test coverage for the central components, the rules algorithm, and each rule. Includes some end-to-end testing for each endpoint.
+- Input validation via OpenAPI specification and NestJS decorators.
+- Stateless API service according to the specification
+- `npm` scripts to aid development tasks and future CI/CD scripting.
+
+
+# Production Checklist
+Some ideas for what would be needed to make this production ready. Exact implementations will depend on the service environment and architecture, but this list can serve as a guide.
+
+- Idempotency
+  - We may want to wrap the `receipts/process` call in a transaction, to avoid partial commits.
+- Security
+  - Authentication (token or OAuth)
+  - Authorization (JWT)
+  - IP Allowlisting (if internally used service)
+  - Secrets configuration integration
+- Logging, Visibility, & Alerting
+- CI/CD tooling integration
+- Caching
+  - HTTP Caching
+  - Redis
+- API rate limiting
+- API versioning (eg. `<app-root>/v2/receipts/:id/points`)
+- Worker service w/ queue
+  - We may have heavy traffic spikes for the `receipts/process` endpoint, which writes data. May require offloading to a set of workers.
+- Terraform for provisioning
+  - Depends on the service architecture and environment, but some ideas:
+    - CPU & Memory Autoscaling
+    - Service replication & load balancing
+    - Automatic server restarts
+- Real database (depends on current architecture)
+  - Replicas & backups
+  - `docker-compose.yml`
+- More testing
+  - Input validation tests
+  - Performance tests (via k6)
+  - Smoke tests (run as part of CI/CD)
+- Feature flagging
+  - The service is pretty small now, so this may not be needed. In the future, feature flagging could be useful for controlled deployments, especially for large coordinated changes, controlled rollouts, and experimentation.
+- Full documentation with runbooks
+
+# Application development
+
+## Compile and run the project
+
+```bash
+# setup
+$ npm run bootstrap
+
+# development
+$ npm run start-local
+
+# watch mode
+$ npm run start-debug
+
+# Build and compile project and run compiled app locally
+$ npm run build
+$ npm run start
+```
+
+## Run tests
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
+
+## Code Standardization
+```bash
+# Linting
+$ npm run lint
+
+# Prettier formatting
+$ npm run format
+```
+
 ## Summary of API Specification
 
 ### Endpoint: Process Receipts
@@ -76,7 +196,7 @@ These rules collectively define how many points should be awarded to a receipt.
 {
   "retailer": "Target",
   "purchaseDate": "2022-01-01",
-  "purchaseTime": "13:01",
+  "purchaseTime": "13:01:00",
   "items": [
     {
       "shortDescription": "Mountain Dew 12PK",
@@ -118,7 +238,7 @@ Breakdown:
 {
   "retailer": "M&M Corner Market",
   "purchaseDate": "2022-03-20",
-  "purchaseTime": "14:33",
+  "purchaseTime": "14:33:00",
   "items": [
     {
       "shortDescription": "Gatorade",
@@ -151,22 +271,3 @@ Breakdown:
 ```
 
 ---
-
-# FAQ
-
-### How will this exercise be evaluated?
-An engineer will review the code you submit. At a minimum they must be able to run the service and the service must provide the expected results. You
-should provide any necessary documentation within the repository. While your solution does not need to be fully production ready, you are being evaluated so
-put your best foot forward.
-
-### I have questions about the problem statement
-For any requirements not specified via an example, use your best judgment to determine the expected result.
-
-### Can I provide a private repository?
-If at all possible, we prefer a public repository because we do not know which engineer will be evaluating your submission. Providing a public repository
-ensures a speedy review of your submission. If you are still uncomfortable providing a public repository, you can work with your recruiter to provide access to
-the reviewing engineer.
-
-### How long do I have to complete the exercise?
-There is no time limit for the exercise. Out of respect for your time, we designed this exercise with the intent that it should take you a few hours. But, please
-take as much time as you need to complete the work.

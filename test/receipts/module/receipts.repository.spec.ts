@@ -64,16 +64,8 @@ describe('RecieptsRepository', () => {
     //// Set up input object
     const receipt: ReceiptDTO = ExampleFactory.receiptInputExampleFromModel(numReceiptItems);
 
-    //// Spy on model calls & mock db returns
+    //// Spy on model call & mock db returns
     prismaService.receipt.create = jest.fn().mockResolvedValue(receiptObject);
-
-    let receiptItemIndex: number = -1;
-    prismaService.receiptItem.create = jest.fn().mockImplementation(() => {
-      receiptItemIndex++;
-      return new Promise((resolve) => {
-        resolve(receiptItems[receiptItemIndex]);
-      });
-    });
 
     //// Perform test function
     const result: ReceiptReferenceDTO = await receiptsRepository.createReceipt(receipt);
@@ -84,6 +76,5 @@ describe('RecieptsRepository', () => {
 
     expect(result).toStrictEqual(expectedResult);
     expect(prismaService.receipt.create).toHaveBeenCalledTimes(1);
-    expect(prismaService.receiptItem.create).toHaveBeenCalledTimes(numReceiptItems);
   });
 });

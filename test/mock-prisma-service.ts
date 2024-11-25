@@ -1,4 +1,4 @@
-// Simple Prisma mock. Could use juest-mock-extended for more flexible mocking
+// Simple Prisma mock. Could use jest-mock-extended for more flexible mocking
 export const mockPrismaService = {
   receipt: {
     findFirst: jest.fn(),

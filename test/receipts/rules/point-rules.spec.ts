@@ -50,6 +50,7 @@ describe('PointRules', () => {
       checkRetailer('&#(#$)%*(),.', 0);
       checkRetailer('OnlyAlphaNumeric1000', 20);
       checkRetailer('A simple & example', 14);
+      checkRetailer(' ABCDEFGHIJKLMNOP QRSTUVWXYZabcdefghijklm nopqrstuvwxyz0123456789 ', 62);
     });
   });
 

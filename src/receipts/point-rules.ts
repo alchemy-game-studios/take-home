@@ -10,7 +10,7 @@ type Rule = (receipt: ReceiptDTO) => Promise<number>;
 
 @Injectable()
 export class PointRules {
-  RULES: Rule[] = [
+  readonly RULES: Rule[] = [
     this.retailerNameCharacters,
     this.totalRoundCurrencyAmount,
     this.totalMultiple,
@@ -49,15 +49,23 @@ export class PointRules {
     });
   }
 
-  // TODO could do bit range check?
   async retailerNameCharacters(receipt: ReceiptDTO): Promise<number> {
-    const alphaNumericPattern: RegExp = /^[A-Za-z0-9]$/;
-    const characters: string[] = receipt.retailer.split('');
+    // ASCII Ranges for Alphanumeric characters
+    const digitRange: number[] = [48, 57];
+    const upperRange: number[] = [65, 90];
+    const lowerRange: number[] = [97, 122];
 
     let matchCount: number = 0;
+    let charCode: number;
+    let isValid: boolean;
 
-    for (const character of characters) {
-      if (character.match(alphaNumericPattern)) {
+    for (let i = 0; i < receipt.retailer.length; i++) {
+      charCode = receipt.retailer.charCodeAt(i);
+      isValid =
+        (charCode >= digitRange[0] && charCode <= digitRange[1]) ||
+        (charCode >= upperRange[0] && charCode <= upperRange[1]) ||
+        (charCode >= lowerRange[0] && charCode <= lowerRange[1]);
+      if (isValid) {
         matchCount++;
       }
     }

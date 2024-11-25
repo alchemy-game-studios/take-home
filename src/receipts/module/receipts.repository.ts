@@ -1,5 +1,5 @@
 import { PrismaService } from '../../prisma.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ReceiptDTO } from '../dto/receipt';
 import { PointsDTO } from '../dto/points';
 import { ReceiptReferenceDTO } from '../dto/receipt-reference';
@@ -7,7 +7,7 @@ import { DateTime } from 'luxon';
 
 @Injectable()
 export class ReceiptsRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getPointsByReceiptId(referenceDto: ReceiptReferenceDTO): Promise<PointsDTO> {
     const foundReceipt = await this.prisma.receipt.findFirst({
@@ -20,7 +20,7 @@ export class ReceiptsRepository {
 
       return pointsDto;
     } else {
-      throw new NotFoundException();
+      return null;
     }
   }
 
@@ -31,20 +31,11 @@ export class ReceiptsRepository {
         purchaseDateTime: DateTime.fromISO(`${receipt.purchaseDate}T${receipt.purchaseTime}`).toJSDate(),
         total: receipt.total,
         points: receipt.points,
+        items: {
+          create: receipt.items, // Handles creating related records in a single transaction for idempotency
+        },
       },
     });
-
-    const receiptItemModels = receipt.items.map((receiptItem) => {
-      return {
-        receiptId: createdReceipt.id,
-        shortDescription: receiptItem.shortDescription,
-        price: receiptItem.price,
-      };
-    });
-
-    for (const itemModel of receiptItemModels) {
-      this.prisma.receiptItem.create({ data: itemModel });
-    }
 
     const referenceDto = new ReceiptReferenceDTO();
     referenceDto.id = createdReceipt.id;

@@ -36,7 +36,9 @@ describe('RecieptsController', () => {
         })
     );
 
-    const result: PointsDTO = await receiptsController.getReceiptPoints(receiptId);
+    const receiptReferenceDto: ReceiptReferenceDTO = new ReceiptReferenceDTO();
+    receiptReferenceDto.id = receiptId;
+    const result: PointsDTO = await receiptsController.getReceiptPoints(receiptReferenceDto);
 
     expect(result).toBe(serviceResult);
   });

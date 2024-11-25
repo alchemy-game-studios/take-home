@@ -11,21 +11,21 @@ You can run this application locally in Docker, or directly on your machine usin
 Environment variables are required for each application stage. An example file is included in the repository. No values should be changed (yet), as there are no secrets handled by the application currently.
 
 ```bash
-$ cp ./env/.env.example ./env/.env.development && cp ./env/.env.example ./env/.env.test
+cp ./env/.env.example ./env/.env.development && cp ./env/.env.example ./env/.env.test
 ```
 
 
 ### Build and Run Container
 Make sure you have Docker running on your machine, and then use these commands to build and start the application container:
 ```bash
-$ docker build --build-arg NODE_ENV=development -t receipt-processor-api:latest .
+docker build --build-arg NODE_ENV=development -t receipt-processor-api:latest .
 ```
 ```bash
-$ docker run -p 3000:3000 -t receipt-processor-api:latest
+docker run -p 3000:3000 -t receipt-processor-api:latest
 ```
 Or if you have `npm` installed:
 ```bash
-$ npm run docker:bootstrap
+npm run docker:bootstrap
 ```
 
 
@@ -40,7 +40,7 @@ nvm install node
 
 Then, simply run this command to set up and start the application locally:
 ```bash
-$ npm run bootstrap && npm run start-local
+npm run bootstrap && npm run start-local
 ```
 
 # Summary of Application Features
@@ -49,6 +49,7 @@ While I'm learning Go (and love it!), for this exercise I opted to build the ser
 Here is a rundown of what is included:
 - NestJS (Typescript) with a structured Controller-Service-Repository model, defined and configured in `ReceiptsModule`.
 - Prisma for an ORM layer, with a SQLite implementation for demonstration purposes.
+  - Support for transactions to ensure idempotency.
   - Prisma generates an abstracted client from a central `schema.prisma` file that can be used for common SQL queries. It also has support for executing arbitrary SQL queries.
   - Prisma provides lifecycle functions for common tasks, like `migrations`.
   - For simplicity, we currently compile and migrate the Prisma schema directly in the Dockerfile to run SQLite in the same container as the application. For production, we would provide a `docker-compose.yml` to configure connections to external resources like the database, and the migration would be run during a deployment stage in the CI/CD pipeline.
@@ -58,14 +59,13 @@ Here is a rundown of what is included:
 - Test coverage for the central components, the rules algorithm, and each rule. Includes some end-to-end testing for each endpoint.
 - Input validation via OpenAPI specification and NestJS decorators.
 - Stateless API service according to the specification
+- Transacted database calls for idempotency
 - `npm` scripts to aid development tasks and future CI/CD scripting.
 
 
 # Production Checklist
 Some ideas for what would be needed to make this production ready. Exact implementations will depend on the service environment and architecture, but this list can serve as a guide.
 
-- Idempotency
-  - We may want to wrap the `receipts/process` call in a transaction, to avoid partial commits.
 - Security
   - Authentication (token or OAuth)
   - Authorization (JWT)
@@ -102,39 +102,39 @@ Some ideas for what would be needed to make this production ready. Exact impleme
 
 ```bash
 # setup
-$ npm run bootstrap
+npm run bootstrap
 
 # development
-$ npm run start-local
+npm run start-local
 
 # watch mode
-$ npm run start-debug
+npm run start-debug
 
 # Build and compile project and run compiled app locally
-$ npm run build
-$ npm run start
+npm run build
+npm run start
 ```
 
 ## Run tests
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
 # test coverage
-$ npm run test:cov
+npm run test:cov
 ```
 
 ## Code Standardization
 ```bash
 # Linting
-$ npm run lint
+npm run lint
 
 # Prettier formatting
-$ npm run format
+npm run format
 ```
 
 ## Summary of API Specification

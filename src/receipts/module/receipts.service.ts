@@ -9,7 +9,7 @@ import { DateTime } from 'luxon';
 @Injectable()
 export class ReceiptsService {
   constructor(
-    private receiptsRepository: ReceiptsRepository,
+    private readonly receiptsRepository: ReceiptsRepository,
     private readonly pointRules: PointRules
   ) {}
 

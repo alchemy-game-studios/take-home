@@ -9,7 +9,7 @@ import { middleware } from 'express-openapi-validator';
 
 /*
  * Defines a set of layers and dependencies that can be injected, as well
- * as configuraiton and middleware.
+ * as configuration and middleware.
  */
 @Module({
   imports: [

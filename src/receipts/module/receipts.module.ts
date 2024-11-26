@@ -7,6 +7,10 @@ import { ReceiptsRepository } from './receipts.repository';
 import { PrismaService } from 'src/prisma.service';
 import { middleware } from 'express-openapi-validator';
 
+/*
+* Defines a set of layers and dependencies that can be injected, as well
+* as configuraiton and middleware.
+*/
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,6 +22,7 @@ import { middleware } from 'express-openapi-validator';
   providers: [PrismaService, ReceiptsService, ReceiptsRepository, PointRules],
 })
 export class ReceiptsModule {
+  // Adds a middleware for validating the OpenAPI spec.
   configure(consumer: MiddlewareConsumer) {
     middleware({
       apiSpec: `api.yml`,

@@ -5,6 +5,10 @@ import { DateTime } from 'luxon';
 import { ReceiptItemDTO } from 'src/receipts/dto/receipt-item';
 import { PointRules } from 'src/receipts/point-rules';
 
+/*
+ * A set of helper functions to abstract setting up expectations and running tests
+ * for Rules.
+ */
 export class PointRulesTestRunners {
   generateReceiptDtoExamples(): ReceiptDTO[] {
     const examples: ReceiptDTO[] = [

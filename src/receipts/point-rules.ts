@@ -4,20 +4,19 @@ import { ReceiptDTO } from 'src/receipts/dto/receipt';
 import { PointRulesConfig } from './point-rules-config';
 
 /*
-* Class to encapsulate generating points for a receipt. New rules can be added
-* by creating a function for the rule below (or group them elsewhere and include)
-* them here. Add them to the RULES list below to automatically run and be added.
-* Rules functions should conform to the Rule type.
-* 
-* Document the rule behavior in the README and refer to it as the source of truth.
-*
-* Rules constants and other setup can be configured in `points-rules-config.yml
-*/
+ * Class to encapsulate generating points for a receipt. New rules can be added
+ * by creating a function for the rule below (or group them elsewhere and include
+ * them here). Add them to the RULES list below to automatically run and be added
+ * to the point total. Rules functions should conform to the Rule type.
+ *
+ * Document rule behavior in the README and refer to it as the source of truth.
+ *
+ * Rules constants and other setup can be configured in `points-rules-config.yml
+ */
 const pointRulesConfig: PointRulesConfig = new PointRulesConfig();
 const config = pointRulesConfig.config;
 
 type Rule = (receipt: ReceiptDTO) => Promise<number>;
-
 
 @Injectable()
 export class PointRules {

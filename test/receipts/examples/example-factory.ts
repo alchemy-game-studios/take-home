@@ -1,6 +1,9 @@
 import { ReceiptDTO } from 'src/receipts/dto/receipt';
 import { ReceiptItemDTO } from 'src/receipts/dto/receipt-item';
 
+/*
+ * Factory to create test data examples.
+ */
 export class ExampleFactory {
   static defaultExampleIndex: number = 0;
 
